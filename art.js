@@ -4,7 +4,7 @@
   const {CHAPTERS,END,createState,update,clamp}=CowJourney;
   const canvas=document.querySelector('#world'),ctx=canvas.getContext('2d');
   let state=createState(), W=1440,H=900,zoom=1,dpr=1,ground=690,anchor=940,homeAnchor=940,focused=true;
-  let held=false,dragging=false,dragX=0,dragBudget=0,lastTime=0,gait=0,emitClock=0,lastCaption='',captionTimer;
+  let held=false,dragging=false,dragX=0,dragBudget=0,lastTime=0,lastUI=0,gait=0,emitClock=0,lastCaption='',captionTimer;
   const keys=new Set(),particles=[],puddles=[];
   const C={green:'#2dab61',cream:'#fff2ce',white:'#fff4d6',black:'#141914',peach:'#f4b483',horn:'#ebcf91',grass:'#17633a',shadow:'#227d47',gray:'#8a8a71'};
   const rand=(n)=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x);};
@@ -13,7 +13,8 @@
   const paper=document.createElement('canvas');paper.width=paper.height=512;
   const pc=paper.getContext('2d'),noise=pc.createImageData(512,512);
   for(let i=0;i<noise.data.length;i+=4){const n=rand(i)*255;noise.data[i]=n;noise.data[i+1]=n;noise.data[i+2]=n;noise.data[i+3]=45;}
-  pc.putImageData(noise,0,0);const grain=ctx.createPattern(paper,'repeat');
+  pc.putImageData(noise,0,0);
+  const backdrop=document.createElement('canvas');let backdropReady=false;
   const moonDisk=document.createElement('canvas');moonDisk.width=moonDisk.height=180;
   const moonContext=moonDisk.getContext('2d');moonContext.fillStyle=C.cream;moonContext.beginPath();moonContext.arc(90,90,65,0,Math.PI*2);moonContext.fill();moonContext.globalCompositeOperation='destination-out';moonContext.beginPath();moonContext.arc(117,72,63,0,Math.PI*2);moonContext.fill();
   function path(d,fill=C.black,stroke=null,line=2){const p=new Path2D(d);if(fill){ctx.fillStyle=fill;ctx.fill(p);}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=line;ctx.stroke(p);}return p;}
@@ -33,8 +34,19 @@
   function resize(){
     const w=innerWidth,h=innerHeight;zoom=Math.min(w/1000,h/850);W=w/zoom;H=h/zoom;dpr=Math.min(devicePixelRatio||1,2);
     canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ground=H*(w/h<.85?.70:.77);homeAnchor=W*(w/h<.85?.53:.66);anchor=homeAnchor;
+    backdrop.width=canvas.width;backdrop.height=canvas.height;backdropReady=false;
   }
   addEventListener('resize',resize);resize();
+  function drawBackdrop(){
+    if(!backdropReady){
+      const b=backdrop.getContext('2d');b.setTransform(dpr*zoom,0,0,dpr*zoom,0,0);
+      b.fillStyle=C.green;b.fillRect(0,0,W,H);CowPaperArt.background(b,W,H);
+      const grain=b.createPattern(paper,'repeat');
+      b.save();b.globalAlpha=.065;b.globalCompositeOperation='soft-light';b.fillStyle=grain;b.fillRect(0,0,W,H);b.restore();
+      b.save();b.globalAlpha=.009;b.fillStyle=grain;b.fillRect(0,0,W,H);b.restore();backdropReady=true;
+    }
+    ctx.drawImage(backdrop,0,0,W,H);
+  }
   function sky(c){
     if(Math.abs(state.distance-c.at)>1200)return;
     const t=state.time*(reduced?.2:1);
@@ -149,8 +161,11 @@
     routeCow.style.right=`${state.distance/END*100}%`;
     document.querySelector('#walk').classList.toggle('active',held||keys.size>0||dragging||state.escaping);
     document.querySelector('#walk-label').textContent=state.escaping?'先走一步':'按住，往前走';
-    document.querySelector('#auto').setAttribute('aria-pressed',String(state.auto));
-    document.querySelector('#auto').innerHTML=state.auto?'停下来看看 <span>Ⅱ</span>':'自己走走 <span>↤</span>';
+    const auto=document.querySelector('#auto');
+    if(auto.getAttribute('aria-pressed')!==String(state.auto)){
+      auto.setAttribute('aria-pressed',String(state.auto));
+      auto.innerHTML=state.auto?'停下来看看 <span>Ⅱ</span>':'自己走走 <span>↤</span>';
+    }
     document.body.classList.toggle('ended',state.ended);document.querySelector('#ending').hidden=!(state.ended&&state.time-state.endedAt>.8);
   }
   function frame(ms){
@@ -164,14 +179,11 @@
       anchor=homeAnchor-(homeAnchor-Math.max(320,W*.24))*CowJourney.smooth((state.distance-13500)/500);
       const events=state.events.splice(0);CowAudio.events(events);CowAudio.update(state,dt);
       for(const e of events)if(e.name==='star-pop'){const n=e.index,origin=CowPaperArt.starOrigin(state,n);particles.push({kind:'moon',world:state.distance,x:origin.x,y:ground+origin.y,age:0,born:e.time,life:4.2,seed:n,spin:0,r:4+rand(n)*4,vx:(-20-origin.x)/4+rand(n+1)*8-4,vy:-60-rand(n+2)*30});}
-      ctx.setTransform(dpr*zoom,0,0,dpr*zoom,0,0);ctx.globalAlpha=1;ctx.fillStyle=C.green;ctx.fillRect(0,0,W,H);
-      CowPaperArt.background(ctx,W,H);CHAPTERS.forEach(sky);grass();drawPuddles(dt);CowPaperArt.draw(ctx,state,anchor,ground,gait,reduced);CowPaperArt.skyClouds(ctx,state,anchor,ground,H,W);
+      ctx.setTransform(dpr*zoom,0,0,dpr*zoom,0,0);ctx.globalAlpha=1;drawBackdrop();
+      CHAPTERS.forEach(sky);grass();drawPuddles(dt);CowPaperArt.draw(ctx,state,anchor,ground,gait,reduced);CowPaperArt.skyClouds(ctx,state,anchor,ground,H,W);
       for(const c of CHAPTERS)if(c.id==='tailor'||c.id==='milk')CowPaperArt.figure(ctx,c,state,anchor,ground);
       emit(dt);drawParticles(dt);
-      ctx.save();ctx.globalAlpha=.065;ctx.globalCompositeOperation='soft-light';ctx.fillStyle=grain;ctx.fillRect(0,0,W,H);ctx.restore();
-      // A very subtle second grain layer keeps the cream and ink on the same paper.
-      ctx.save();ctx.globalAlpha=.009;ctx.fillStyle=grain;ctx.fillRect(0,0,W,H);ctx.restore();
-      caption();
+      if(ms-lastUI>=100){caption();lastUI=ms;}
     }
     requestAnimationFrame(frame);
   }

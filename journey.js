@@ -9,7 +9,7 @@
     {id:'moon',name:'借给夜晚',at:10650,width:780,duration:18,title:'黑色里面，<br>有几颗不太黑。',copy:'星星一颗颗出来。<br>出来以后，就不算牛的了。'},
     {id:'ufo',name:'不明来客',at:12650,width:780,duration:17,title:'黑色被带走了。<br>没有留下收据。',copy:'飞碟停得很轻。<br>像是借过很多次了。'}
   ];
-  const END=14000,SPEED=172,RUN=330,RECOVER=.10,STRIDE=152;
+  const END=14000,SPEED=172,RUN=330,RECOVER=1/15,STRIDE=152;
   const STAR_COUNT=28,STAR_STEP=.034;
   const CLOUD_STEPS=[.018,.25,.50,.75];
   const clamp=(n,a=0,b=1)=>Math.min(b,Math.max(a,n));
