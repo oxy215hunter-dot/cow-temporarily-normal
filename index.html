@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#2dab61">
+  <meta name="description" content="一头牛出门走走。黑白各有各的打算。一个关于颜色暂借、日子照过的荒诞小故事。">
+  <title>奶牛暂时正常</title>
+  <link rel="stylesheet" href="style.css?r=20261023-r8">
+</head>
+<body>
+  <main id="experience">
+    <canvas id="world" aria-label="奶牛暂时正常，一卷绿色纸面上的荒诞小故事。按住左方向键或下方按钮，让奶牛向左前进。"></canvas>
+    <header>
+      <a class="wordmark" href="./" aria-label="奶牛暂时正常首页"><span class="mark">●</span> 奶牛暂时正常 <span class="edition">一卷 / 黑白暂借</span></a>
+      <div class="header-actions"><button id="sound" aria-pressed="true" title="音乐与音效开关">声音 · 开</button><button id="fullscreen" class="icon-button" aria-label="切换全屏" title="全屏">⛶</button></div>
+    </header>
+    <div id="chapter" aria-live="polite">
+      <p id="chapter-kicker">一头牛 / 黑白暂时齐全</p>
+      <h1 id="chapter-title">奶牛<br>暂时正常。</h1>
+      <p id="chapter-copy">它打算出去走走。<br>黑白各有各的打算。</p>
+    </div>
+    <div id="ink-note"><span id="ink-swatch"></span><span id="ink-label">黑色还在身上</span></div>
+    <div id="ending" hidden>
+      <p class="ending-kicker">卷尾 / 暂时正常</p><h2>黑白回来了。<br>暂时都算它的。</h2>
+      <p>今天的事，明天再说。<br>奶牛还有一小段发呆要忙。<br>哞。</p>
+      <button id="again-end" type="button" aria-label="重新开始奶牛的旅程">再走一次 ↶</button>
+    </div>
+    <footer>
+      <div class="journey" aria-label="旅程进度，从右向左">
+        <span class="journey-end">终</span><div id="route"></div><span class="journey-start">起</span>
+      </div>
+      <div class="controls">
+        <button id="restart" class="quiet" title="回到起点">↶ <span>重走</span></button>
+        <button id="walk" aria-label="按住向左前进"><span class="walk-arrow">←</span><span id="walk-label">按住，往前走</span></button>
+        <button id="auto" class="quiet" aria-pressed="false">自己走走 <span>↤</span></button>
+      </div>
+      <p class="hint" id="hint">按住 ← / A / 空格向前 · 点击进度条跳关</p>
+    </footer>
+    <p class="rotate-note">横过来看，路会更长。</p>
+    <noscript>请启用 JavaScript 来观看奶牛的旅程。</noscript>
+  </main>
+  <script src="journey.js?r=20261023-r8"></script>
+  <script src="cow-data.js?r=20261023-r8"></script>
+  <script src="gait-data.js?r=20261023-r8"></script>
+  <script src="cow-art.js?r=20261023-r8"></script>
+  <script src="audio.js?r=20261023-r8"></script>
+  <script src="art.js?r=20261023-r8"></script>
+</body>
+</html>
+
+
+
